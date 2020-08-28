@@ -40,7 +40,7 @@ def shutdown(seconds=0, os='linux'):
 def downloadDataset():
     s3 = boto3.client('s3')
     bucket = os.getenv('S3_DATASET_BUCKET')
-    file = 'wikipedia-content-dataset.json'
+    file = os.getenv('DATASET')
     s3.download_file(bucket, file, file)
     logging.info(f'dataset downloaded')
 
