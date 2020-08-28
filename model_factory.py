@@ -6,6 +6,10 @@ import os
 import sys
 import logging
 import boto3
+import nltk
+from dotenv import load_dotenv
+from nltk.corpus import stopwords
+from fastprogress.fastprogress import master_bar
 
 from nltk.tokenize import word_tokenize
 from tensorflow.keras.models import Sequential
@@ -14,15 +18,25 @@ from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import LSTM
 from tensorflow.keras.layers import Embedding
 
-import nltk
 nltk.download('punkt')
 nltk.download('stopwords')
 
-chars = 0
+chars = ''
 maxlen = 60
 
-def setupLogger():
-	logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+def setup():
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    load_dotenv('.env')
+    global chars
+    global maxlen
+
+
+def shutdown(seconds=0, os='linux'):
+    if os == 'linux':
+        os.system(f'sudo shutdown -h -t sec {seconds}')
+    elif os == 'windows':
+        os.system(f'shutdown -s -t {seconds}')
 
 
 def downloadDataset():
@@ -44,18 +58,13 @@ def prepareData(dataFile):
         for i in c:
             text += i
 
-    logging.info(f'Corpus length:', len(text))
+    logging.info(f'Corpus length: {len(text)}')
 
     tokens = word_tokenize(text)
-    # convert to lower case
     tokens = [w.lower() for w in tokens]
-    # remove punctuation from each word
     table = str.maketrans('', '', string.punctuation)
     stripped = [w.translate(table) for w in tokens]
-    # remove remaining tokens that are not alphabetic
     words = [word for word in stripped if word.isalpha()]
-    # filter out stop words
-    from nltk.corpus import stopwords
     stop_words = set(stopwords.words('english'))
     words = [w for w in words if not w in stop_words]
 
@@ -64,54 +73,63 @@ def prepareData(dataFile):
         text += c
         text += ' '
     text = text.strip()
+
     logging.info(f'Finished to load file')
     return text
 
 
 def prepareTrainingData(text):
-	step = 3
-	sentences = []
-	next_chars = []
+    step = 3
+    sentences = []
+    next_chars = []
 
-	for i in range(0, len(text) - maxlen, step):
-	    sentences.append(text[i: i + maxlen])
-	    next_chars.append(text[i + maxlen])
-	logging.info(f'Numero de sequencias:', len(sentences))
+    for i in range(0, len(text) - maxlen, step):
+        sentences.append(text[i: i + maxlen])
+        next_chars.append(text[i + maxlen])
+    logging.info(f'Number of sequences: {len(sentences)}')
 
-	chars = sorted(list(set(text)))
-	logging.info(f'Caracteres unicos:', len(chars))
-	char_indices = dict((char, chars.index(char)) for char in chars)
+    chars = sorted(list(set(text)))
+    logging.info(f'Unique characters: {len(chars)}')
+    char_indices = dict((char, chars.index(char)) for char in chars)
 
-	logging.info(f'Vetorizando o texto')
-	x = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
-	y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
-	for i, sentence in enumerate(sentences):
-	    for t, char in enumerate(sentence):
-	        x[i, t, char_indices[char]] = 1
-	    y[i, char_indices[next_chars[i]]] = 1
-	logging.info(f'Finished to prepare data')
-	return x, y
+    logging.info(f'Vectorizing text')
+    x = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
+    y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
+    for i, sentence in enumerate(sentences):
+        for t, char in enumerate(sentence):
+            x[i, t, char_indices[char]] = 1
+        y[i, char_indices[next_chars[i]]] = 1
+
+    logging.info(f'Finished to prepare data')
+    return x, y
 
 
 def prepareTrainModel(x, y):
-	model = Sequential([
-        LSTM(len(chars), return_sequences=True, input_shape=(maxlen, len(chars))),
+    model = Sequential([
+        LSTM(len(chars), return_sequences=True,
+             input_shape=(maxlen, len(chars))),
         LSTM(len(chars), return_sequences=True),
         LSTM(len(chars)),
         Dense(len(chars), activation='relu'),
         Dropout(0.2),
         Dense(len(chars), activation='softmax')
-	])
-	model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-	for epoch in range(1, 100):
-		logging.info(f'Epoch {epoch}')
-		model.fit(x, y, batch_size=128, epochs=1)
+    ])
 
-	logging.info(f'Finished to train model')
-	return model
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='adam', metrics=['accuracy'])
+
+    logging.info(f'Starting to train model')
+    mb = master_bar(range(1, 100))
+    for epoch in mb:
+        mb.comment = f'Epoch: {epoch}'
+        model.fit(x, y, batch_size=128, epochs=1)
+
+    logging.info(f'Finished to train model')
+    return model
 
 
 def saveModel(model):
+    logging.info(f'Saving model to S3')
     s3 = boto3.client('s3')
     file = 'wikipedia-nlp.hdf5'
     gen = os.getenv('GENERATION')
@@ -123,10 +141,16 @@ def saveModel(model):
     return 0
 
 
-setupLogger()
-downloadDataset()
-text = prepareData('wikipedia-content-dataset.json')
-x, y = prepareTrainingData(text)
-model = prepareTrainModel(x, y)
-saveModel(model)
-logging.info(f'Model training finished and file saved to s3.')
+def main():
+    setup()
+    downloadDataset()
+    text = prepareData('wikipedia-content-dataset.json')
+    x, y = prepareTrainingData(text)
+    model = prepareTrainModel(x, y)
+    saveModel(model)
+    logging.info(f'Model training finished and file saved to s3.')
+    shutdown()
+
+
+if __name__ == "__main__":
+    main()
