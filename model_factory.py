@@ -28,8 +28,6 @@ maxlen = 60
 def setup():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     load_dotenv('.env')
-    global chars
-    global maxlen
 
 
 def shutdown(seconds=0, os='linux'):
@@ -79,6 +77,7 @@ def prepareData(dataFile):
 
 
 def prepareTrainingData(text):
+    global chars
     step = 3
     sentences = []
     next_chars = []
