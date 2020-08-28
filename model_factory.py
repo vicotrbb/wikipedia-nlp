@@ -118,7 +118,6 @@ def prepareTrainModel(x, y):
                   optimizer='adam', metrics=['accuracy'])
 
     logging.info(f'Starting to train model')
-    mb = master_bar(range(1, 100))
     for epoch in progress_bar(range(100)):
         model.fit(x, y, batch_size=128, epochs=1)
 
