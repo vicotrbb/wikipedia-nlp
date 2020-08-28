@@ -142,7 +142,7 @@ def saveModel(model):
 def main():
     setup()
     downloadDataset()
-    text = prepareData('wikipedia-content-dataset.json')
+    text = prepareData('wikipedia-reduced-content-dataset.json')
     x, y = prepareTrainingData(text)
     model = prepareTrainModel(x, y)
     saveModel(model)
