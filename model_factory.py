@@ -129,7 +129,7 @@ def prepareTrainModel(x, y):
 def saveModel(model):
     logging.info(f'Saving model to S3')
     s3 = boto3.client('s3')
-    file = 'wikipedia-nlp.hdf5'
+    file = 'wikipedia-nlp.h5'
     gen = os.getenv('GENERATION')
     bucket = os.getenv('S3_BUCKET')
 
