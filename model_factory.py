@@ -9,7 +9,7 @@ import boto3
 import nltk
 from dotenv import load_dotenv
 from nltk.corpus import stopwords
-from fastprogress.fastprogress import master_bar
+from fastprogress.fastprogress import progress_bar
 
 from nltk.tokenize import word_tokenize
 from tensorflow.keras.models import Sequential
@@ -119,8 +119,7 @@ def prepareTrainModel(x, y):
 
     logging.info(f'Starting to train model')
     mb = master_bar(range(1, 100))
-    for epoch in mb:
-        mb.comment = f'Epoch: {epoch}'
+    for epoch in progress_bar(range(100)):
         model.fit(x, y, batch_size=128, epochs=1)
 
     logging.info(f'Finished to train model')
