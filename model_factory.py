@@ -120,6 +120,7 @@ def prepareTrainModel(x, y):
     logging.info(f'Starting to train model')
     for epoch in progress_bar(range(100)):
         model.fit(x, y, batch_size=128, epochs=1)
+        logging.info(f'Training epoch: {epoch}')
 
     logging.info(f'Finished to train model')
     return model
