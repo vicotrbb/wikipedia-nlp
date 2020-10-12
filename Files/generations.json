@@ -1,0 +1,69 @@
+{
+    "first_gen": {
+        "gen_number": 1,
+        "complete_model": null,
+        "partial_models": [
+            "Models/1gen-100parts.h5"
+        ],
+        "description": "First model generation created with the default script.",
+        "model_info": {
+            "model": "sequential_1",
+            "layers": {
+                "embedding_1 (Embedding)": {
+                    "output_shape": "(None, 57, 50)",
+                    "Param#": 29600
+                },
+                "lstm_2 (LSTM)": {
+                    "output_shape": "(None, 57, 150)",
+                    "Param#": 120600
+                },
+                "lstm_3 (LSTM)": {
+                    "output_shape": "(None, 150)",
+                    "Param#": 180600
+                },
+                "Dense_2 (Dense)": {
+                    "output_shape": "(None, 150)",
+                    "Param#": 22650
+                },
+                "Dense_3 (Dense)": {
+                    "output_shape": "(None, 591)",
+                    "Param#": 89241
+                }
+            },
+            "total_param": 442.691,
+            "trainable_param": 442.691,
+            "non_trainable_param": 0,
+            "loss": "categorical_crossentropy",
+            "optimizer": "adam",
+            "metrics": [
+                "accuracy"
+            ]
+        },
+        "train_configuration": {
+            "maxlen": 60,
+            "step": 3,
+            "seeds": {
+                "env": 66,
+                "tensorflow": 66,
+                "numpy": 66,
+                "random": 66
+            },
+            "train_hardware": "CPU",
+            "num_cpu": 1,
+            "num_gpu": 0,
+            "num_tpu": 0,
+            "memory": {
+                "size": 12,
+                "unit": "GB"
+            },
+            "tokenization": "nltk",
+            "lib_versions": {
+                "tensorflow": "2.3.1",
+                "keras": "2.4.0",
+                "numpy": "1.18.5",
+                "nltk": "3.5"
+            }
+        },
+        "dataset": {}
+    }
+}
