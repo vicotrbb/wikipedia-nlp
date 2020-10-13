@@ -2,9 +2,9 @@
     "first_gen": {
         "gen_number": 1,
         "complete_model": null,
-        "partial_models": [
-            "Models/1gen-100parts.h5"
-        ],
+        "models": {
+            "1gen-100parts": "Models/1gen-100parts.h5"
+        },
         "description": "First model generation created with the default script.",
         "model_info": {
             "model": "sequential_1",
@@ -65,5 +65,6 @@
             }
         },
         "dataset": {}
-    }
+    },
+    "second_gen": {}
 }

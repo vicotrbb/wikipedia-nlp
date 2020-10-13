@@ -36,10 +36,10 @@ venv:
 	$(create-venv)
 	@$(PIP) install --no-cache-dir -r $(REQUIREMENTS) | grep -v 'already satisfied' || true
 
-run: venv
+run:
 	@$(LOCAL) run app.py
 
-test-simple: venv
+test-simple:
 	@$(TEST) test/test_healthcheck.py -v
 
 freeze:

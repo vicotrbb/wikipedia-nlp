@@ -1,14 +1,24 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import json
 
-generations = None
+generations_info = None
+generations = []
+topics = []
+model_version = []
+temperature = 0.1
+predict_len = 100
+model_gen = None
+model_version = None
 
-def setup()
+def setup():
+    load_data()
     st.title('Wikipedia NLP')
-    with open('Files/generations.json') as json_file:
-        generations = json.load(json_file)
-
+    st.text(
+        """
+        """
+    )
 
 def main():
     temperature = st.sidebar.slider(
@@ -25,12 +35,23 @@ def main():
     
     model_gen = st.sidebar.selectbox(
         label='Model generation',
-        options=[],
+        options=generations,
+        index=-1
+    )
+    
+    model_version = st.sidebar.selectbox(
+        label='Model version',
+        options=model_version,
         index=-1
     )
     
 @st.cache
 def load_data():
+    with open('Files/generations.json') as json_file:
+        generations_info = json.load(json_file)
+    generations = generations_info.keys()
+    
+    model_version = generations_info[model_gen].models.keys()
 
 
 if __name__ == "__main__":
